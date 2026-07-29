@@ -57,8 +57,8 @@ public class NotificationService extends Service {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
-                    "Aygün Müəllim",
-                    NotificationManager.IMPORTANCE_MIN
+                    "Aygün Müəllim Arxa Plan",
+                    NotificationManager.IMPORTANCE_LOW
             );
             channel.setDescription("Arxa plan xidməti");
             NotificationManager manager = getSystemService(NotificationManager.class);
@@ -77,7 +77,7 @@ public class NotificationService extends Service {
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Aygün Müəllim")
                 .setContentText("Bildirişlər dinlənilir...")
-                .setSmallIcon(android.R.drawable.ic_dialog_info)
+                .setSmallIcon(R.drawable.ic_notification)
                 .setContentIntent(pendingIntent)
                 .setOngoing(true)
                 .build();
@@ -132,20 +132,21 @@ public class NotificationService extends Service {
             String json = httpGet(BASE_URL + "/api/messages", cookie);
             if (json == null) return lastId;
 
-            int maxMsgId = 0;
-            String name = null;
-
+            int maxMsgId = lastId;
             int idx = 0;
+
             while (true) {
                 int startId = json.indexOf("\"id\":", idx);
                 if (startId == -1) break;
                 int endId = json.indexOf(",", startId + 5);
+                if (endId == -1) endId = json.indexOf("}", startId + 5);
                 if (endId == -1) break;
                 int msgId = parseInt(json.substring(startId + 5, endId).trim());
                 if (msgId > maxMsgId) maxMsgId = msgId;
 
                 int nameStart = json.indexOf("\"student_name\":\"", idx);
-                if (nameStart != -1) {
+                String name = null;
+                if (nameStart != -1 && nameStart < endId + 50) {
                     int nameEnd = json.indexOf("\"", nameStart + 16);
                     if (nameEnd != -1) {
                         name = json.substring(nameStart + 16, nameEnd);
@@ -153,7 +154,7 @@ public class NotificationService extends Service {
                 }
 
                 int lastMsgStart = json.indexOf("\"last_message\":{", idx);
-                if (lastMsgStart != -1) {
+                if (lastMsgStart != -1 && lastMsgStart < endId + 100) {
                     int lastMsgEnd = json.indexOf("}", lastMsgStart);
                     if (lastMsgEnd != -1) {
                         String lastMsg = json.substring(lastMsgStart + 16, lastMsgEnd);
@@ -165,7 +166,7 @@ public class NotificationService extends Service {
                                 String content = lastMsg.substring(contentStart, contentEnd);
                                 if (lastId > 0 && msgId > lastId) {
                                     showNotification(
-                                            name != null ? name : "Yeni mesaj",
+                                            name != null ? name + " yazdı" : "Yeni mesaj",
                                             content
                                     );
                                 }
@@ -185,14 +186,14 @@ public class NotificationService extends Service {
 
     private void showNotification(String title, String body) {
         Intent intent = new Intent(this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(
                 this, 0, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
 
         Notification notification = new NotificationCompat.Builder(this, "aygun_muellim_notifications")
-                .setSmallIcon(android.R.drawable.ic_dialog_info)
+                .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle(title)
                 .setContentText(body)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)

@@ -31,6 +31,7 @@ public class WebAppInterface {
             );
             channel.setDescription("Mesaj və elan bildirişləri");
             channel.enableVibration(true);
+            channel.enableLights(true);
             channel.setShowBadge(true);
             NotificationManager manager = context.getSystemService(NotificationManager.class);
             if (manager != null) {
@@ -42,14 +43,14 @@ public class WebAppInterface {
     @JavascriptInterface
     public void postNotification(String title, String body) {
         Intent intent = new Intent(context, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(
                 context, 0, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(android.R.drawable.ic_dialog_info)
+                .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle(title)
                 .setContentText(body)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
