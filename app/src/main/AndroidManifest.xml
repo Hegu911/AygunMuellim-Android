@@ -9,8 +9,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AygunMuellim"
         android:hardwareAccelerated="true"
-        android:icon="@mipmap/ic_launcher"
-        android:roundIcon="@mipmap/ic_launcher">
+        android:icon="@drawable/logo"
+        android:roundIcon="@drawable/logo">
 
         <activity
             android:name=".MainActivity"
