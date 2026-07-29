@@ -20,6 +20,7 @@ import java.net.URL;
 public class NotificationService extends Service {
 
     private static final String CHANNEL_ID = "aygun_muellim_foreground";
+    private static final String NOTIF_CHANNEL_ID = "aygun_muellim_notifications";
     private static final int NOTIFICATION_ID = 1;
     private static final String BASE_URL = "https://lms-2hd.pages.dev";
     private volatile boolean running = true;
@@ -28,6 +29,7 @@ public class NotificationService extends Service {
     public void onCreate() {
         super.onCreate();
         createForegroundChannel();
+        createNotificationChannel();
     }
 
     @Override
@@ -68,6 +70,24 @@ public class NotificationService extends Service {
         }
     }
 
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    NOTIF_CHANNEL_ID,
+                    "Aygün Müəllim Bildirişləri",
+                    NotificationManager.IMPORTANCE_HIGH
+            );
+            channel.setDescription("Mesaj və elan bildirişləri");
+            channel.enableVibration(true);
+            channel.enableLights(true);
+            channel.setShowBadge(true);
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            if (manager != null) {
+                manager.createNotificationChannel(channel);
+            }
+        }
+    }
+
     private Notification buildForegroundNotification() {
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(
@@ -98,7 +118,7 @@ public class NotificationService extends Service {
             }
 
             try {
-                Thread.sleep(15000);
+                Thread.sleep(10000);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
@@ -198,7 +218,7 @@ public class NotificationService extends Service {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
 
-        Notification notification = new NotificationCompat.Builder(this, "aygun_muellim_notifications")
+        Notification notification = new NotificationCompat.Builder(this, NOTIF_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle(title)
                 .setContentText(body)
