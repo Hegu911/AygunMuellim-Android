@@ -19,11 +19,14 @@ public class MainActivity extends AppCompatActivity {
         WebSettings settings = webView.getSettings();
 
         settings.setJavaScriptEnabled(true);
+        settings.setDomStorageEnabled(true);
         settings.setSupportZoom(false);
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
         settings.setLoadWithOverviewMode(true);
         settings.setUseWideViewPort(true);
+        settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+        settings.setCacheMode(WebSettings.LOAD_DEFAULT);
 
         webView.setWebViewClient(new WebViewClient());
         webView.loadUrl("https://lms-2hd.pages.dev");
