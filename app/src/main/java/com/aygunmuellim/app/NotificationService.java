@@ -113,6 +113,9 @@ public class NotificationService extends Service {
 
     private int checkAnnouncements(String cookie, int lastId) {
         try {
+            int notifiedInApp = extractCookieInt(cookie, "lastNotifiedAnnId");
+            if (notifiedInApp > lastId) return Math.max(lastId, notifiedInApp);
+
             String json = httpGet(BASE_URL + "/api/announcements", cookie);
             if (json == null) return lastId;
 
@@ -129,6 +132,9 @@ public class NotificationService extends Service {
 
     private int checkMessages(String cookie, int lastId) {
         try {
+            int notifiedInApp = extractCookieInt(cookie, "lastNotifiedMsgId");
+            if (notifiedInApp > lastId) return Math.max(lastId, notifiedInApp);
+
             String json = httpGet(BASE_URL + "/api/messages", cookie);
             if (json == null) return lastId;
 
@@ -270,6 +276,21 @@ public class NotificationService extends Service {
     private int parseInt(String s) {
         try {
             return Integer.parseInt(s.trim());
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    private int extractCookieInt(String cookie, String name) {
+        if (cookie == null || name == null) return 0;
+        String key = name + "=";
+        int start = cookie.indexOf(key);
+        if (start == -1) return 0;
+        start += key.length();
+        int end = cookie.indexOf(";", start);
+        if (end == -1) end = cookie.length();
+        try {
+            return Integer.parseInt(cookie.substring(start, end).trim());
         } catch (NumberFormatException e) {
             return 0;
         }
