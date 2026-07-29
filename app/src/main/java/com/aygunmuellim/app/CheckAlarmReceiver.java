@@ -1,11 +1,13 @@
 package com.aygunmuellim.app;
 
+import android.app.AlarmManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 
 import androidx.core.app.NotificationCompat;
 
@@ -23,6 +25,7 @@ public class CheckAlarmReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        scheduleNext(context);
         PendingResult pendingResult = goAsync();
         new Thread(() -> {
             try {
@@ -47,6 +50,22 @@ public class CheckAlarmReceiver extends BroadcastReceiver {
                 pendingResult.finish();
             }
         }).start();
+    }
+
+    private void scheduleNext(Context context) {
+        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(context, CheckAlarmReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                context, 0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+        long next = System.currentTimeMillis() + AlarmManager.INTERVAL_FIFTEEN_MINUTES;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            AlarmManager.AlarmClockInfo info = new AlarmManager.AlarmClockInfo(next, pendingIntent);
+            am.setAlarmClock(info, pendingIntent);
+        } else {
+            am.set(AlarmManager.RTC_WAKEUP, next, pendingIntent);
+        }
     }
 
     private String getAuthCookie(Context context) {

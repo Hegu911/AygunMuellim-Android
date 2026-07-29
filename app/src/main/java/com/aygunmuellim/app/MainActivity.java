@@ -60,7 +60,13 @@ public class MainActivity extends AppCompatActivity {
         String savedCookie = getSavedAuthCookie(this);
         if (savedCookie != null) {
             try {
-                CookieManager.getInstance().setCookie(BASE_URL, savedCookie);
+                String[] parts = savedCookie.split(";\\s*");
+                for (String part : parts) {
+                    part = part.trim();
+                    if (!part.isEmpty()) {
+                        CookieManager.getInstance().setCookie(BASE_URL, part);
+                    }
+                }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     CookieManager.getInstance().flush();
                 }
@@ -133,17 +139,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void scheduleAlarm() {
-        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
         Intent intent = new Intent(this, CheckAlarmReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(
                 this, 0, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
-
-        long interval = AlarmManager.INTERVAL_FIFTEEN_MINUTES;
-        long triggerAt = System.currentTimeMillis() + interval;
-
-        alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, triggerAt, interval, pendingIntent);
+        long first = System.currentTimeMillis() + AlarmManager.INTERVAL_FIFTEEN_MINUTES;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            AlarmManager.AlarmClockInfo info = new AlarmManager.AlarmClockInfo(first, null);
+            am.setAlarmClock(info, pendingIntent);
+        } else {
+            am.set(AlarmManager.RTC_WAKEUP, first, pendingIntent);
+        }
     }
 
     @Override

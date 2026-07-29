@@ -1,5 +1,6 @@
 package com.aygunmuellim.app;
 
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -55,6 +56,23 @@ public class NotificationService extends Service {
     public void onDestroy() {
         running = false;
         super.onDestroy();
+        scheduleRestart();
+    }
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        super.onTaskRemoved(rootIntent);
+        scheduleRestart();
+    }
+
+    private void scheduleRestart() {
+        Intent restartIntent = new Intent(this, NotificationService.class);
+        PendingIntent pendingIntent = PendingIntent.getService(
+                this, 2, restartIntent,
+                PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE
+        );
+        AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
+        am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 1000, pendingIntent);
     }
 
     private void createForegroundChannel() {
