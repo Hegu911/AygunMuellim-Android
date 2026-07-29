@@ -2,15 +2,18 @@ package com.aygunmuellim.app;
 
 import android.Manifest;
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.Settings;
 import android.webkit.CookieManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -74,6 +77,9 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        requestBatteryOptimizationExemption();
+        showXiaomiGuidance();
+
         webView = findViewById(R.id.webview);
         WebSettings settings = webView.getSettings();
 
@@ -136,6 +142,33 @@ public class MainActivity extends AppCompatActivity {
         }
         saveAuthCookie(this);
         super.onDestroy();
+    }
+
+    private void showXiaomiGuidance() {
+        String manufacturer = Build.MANUFACTURER.toLowerCase();
+        if (!manufacturer.contains("xiaomi") && !manufacturer.contains("redmi") && !manufacturer.contains("poco")) return;
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        if (prefs.getBoolean("xiaomi_guide_shown", false)) return;
+        prefs.edit().putBoolean("xiaomi_guide_shown", true).apply();
+        new AlertDialog.Builder(this)
+                .setTitle("Bildirişlər üçün icazə")
+                .setMessage("Xiaomi cihazlarda bildirişlərin işləməsi üçün əl ilə icazə verməlisiniz:\n\n" +
+                        "1. Parametrlər > Batareya > Batareya optimizasiyası > 'Optimizasiya etmə' seçin\n" +
+                        "2. Parametrlər > Tətbiqlər > Aygün Müəllim > Avtomatik başlanğıcı yandırın\n" +
+                        "3. Son tətbiqlər siyahısında Aygün Müəllim kartını aşağı çəkib kilidləyin (🔒)\n\n" +
+                        "Bu addımlar olmadan bildirişlər işləməyəcək.")
+                .setPositiveButton("Başa düşdüm", (d, w) -> d.dismiss())
+                .show();
+    }
+
+    private void requestBatteryOptimizationExemption() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        if (prefs.getBoolean("battery_opt_requested", false)) return;
+        prefs.edit().putBoolean("battery_opt_requested", true).apply();
+        Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+        intent.setData(Uri.parse("package:" + getPackageName()));
+        startActivity(intent);
     }
 
     private void scheduleAlarm() {
