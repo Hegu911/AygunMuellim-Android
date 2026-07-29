@@ -1,7 +1,7 @@
 package com.aygunmuellim.app;
 
-import android.animation.AlphaAnimation;
-import android.animation.Animation;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.os.Bundle;
 import android.view.View;
 import android.webkit.WebChromeClient;
