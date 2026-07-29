@@ -6,7 +6,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.webkit.CookieManager;
 
 import androidx.core.app.NotificationCompat;
 
@@ -27,7 +26,7 @@ public class CheckAlarmReceiver extends BroadcastReceiver {
         PendingResult pendingResult = goAsync();
         new Thread(() -> {
             try {
-                String cookie = getAuthCookie();
+                String cookie = getAuthCookie(context);
                 if (cookie == null || cookie.isEmpty()) return;
 
                 SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -50,13 +49,9 @@ public class CheckAlarmReceiver extends BroadcastReceiver {
         }).start();
     }
 
-    private String getAuthCookie() {
-        try {
-            CookieManager cookieManager = CookieManager.getInstance();
-            return cookieManager.getCookie(BASE_URL);
-        } catch (Exception e) {
-            return null;
-        }
+    private String getAuthCookie(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences("aygun_prefs", Context.MODE_PRIVATE);
+        return prefs.getString("auth_cookie", null);
     }
 
     private int checkMessages(String cookie, int lastId, Context context) {

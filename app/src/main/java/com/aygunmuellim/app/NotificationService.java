@@ -5,10 +5,11 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.IBinder;
-import android.webkit.CookieManager;
 
 import androidx.core.app.NotificationCompat;
 
@@ -23,6 +24,7 @@ public class NotificationService extends Service {
     private static final String NOTIF_CHANNEL_ID = "aygun_muellim_notifications";
     private static final int NOTIFICATION_ID = 1;
     private static final String BASE_URL = "https://lms-2hd.pages.dev";
+    private static final String PREFS_NAME = "aygun_prefs";
     private volatile boolean running = true;
 
     @Override
@@ -106,19 +108,25 @@ public class NotificationService extends Service {
     private void pollLoop() {
         int lastAnnouncementId = 0;
         int lastMessageId = 0;
+        int emptyCookieCount = 0;
 
         while (running) {
             try {
                 String cookie = getAuthCookie();
                 if (cookie != null && !cookie.isEmpty()) {
+                    emptyCookieCount = 0;
                     lastAnnouncementId = checkAnnouncements(cookie, lastAnnouncementId);
                     lastMessageId = checkMessages(cookie, lastMessageId);
+                } else {
+                    saveAuthCookie();
+                    emptyCookieCount++;
                 }
             } catch (Exception ignored) {
             }
 
             try {
-                Thread.sleep(10000);
+                long sleepMs = emptyCookieCount > 5 ? 60000 : 10000;
+                Thread.sleep(sleepMs);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
@@ -127,8 +135,14 @@ public class NotificationService extends Service {
     }
 
     private String getAuthCookie() {
-        CookieManager cookieManager = CookieManager.getInstance();
-        return cookieManager.getCookie(BASE_URL);
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        String saved = prefs.getString("auth_cookie", null);
+        if (saved != null && !saved.isEmpty()) return saved;
+        return null;
+    }
+
+    private void saveAuthCookie() {
+        MainActivity.saveAuthCookie(this);
     }
 
     private int checkAnnouncements(String cookie, int lastId) {
