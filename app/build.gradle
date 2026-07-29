@@ -16,10 +16,10 @@ android {
 
     signingConfigs {
         release {
-            storeFile file(System.getenv("KEYSTORE_PATH") ?: "release.keystore")
-            storePassword System.getenv("KEYSTORE_PASSWORD") ?: "aygun123"
-            keyAlias System.getenv("KEY_ALIAS") ?: "aygun"
-            keyPassword System.getenv("KEY_PASSWORD") ?: "aygun123"
+            storeFile file("release.keystore")
+            storePassword "aygun123"
+            keyAlias "aygun"
+            keyPassword "aygun123"
         }
     }
 
@@ -28,8 +28,7 @@ android {
             signingConfig signingConfigs.release
         }
         release {
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')
+            minifyEnabled false
             signingConfig signingConfigs.release
         }
     }

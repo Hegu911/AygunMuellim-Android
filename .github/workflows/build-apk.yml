@@ -26,20 +26,8 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Generate release keystore
-        run: |
-          keytool -genkey -v -keystore release.keystore -alias aygun \
-            -keyalg RSA -keysize 2048 -validity 10000 \
-            -storepass aygun123 -keypass aygun123 \
-            -dname "CN=Aygün Müəllim, OU=LMS, O=Aygün Müəllim, L=Baku, C=AZ"
-
       - name: Build signed APK
-        run: |
-          export KEYSTORE_PATH=${{ github.workspace }}/release.keystore
-          export KEYSTORE_PASSWORD=aygun123
-          export KEY_ALIAS=aygun
-          export KEY_PASSWORD=aygun123
-          ./gradlew assembleRelease
+        run: ./gradlew assembleRelease
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
