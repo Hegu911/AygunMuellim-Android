@@ -14,10 +14,23 @@ android {
         versionName "1.0"
     }
 
+    signingConfigs {
+        release {
+            storeFile file(System.getenv("KEYSTORE_PATH") ?: "release.keystore")
+            storePassword System.getenv("KEYSTORE_PASSWORD") ?: "aygun123"
+            keyAlias System.getenv("KEY_ALIAS") ?: "aygun"
+            keyPassword System.getenv("KEY_PASSWORD") ?: "aygun123"
+        }
+    }
+
     buildTypes {
+        debug {
+            signingConfig signingConfigs.release
+        }
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')
+            signingConfig signingConfigs.release
         }
     }
 
