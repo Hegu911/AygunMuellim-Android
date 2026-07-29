@@ -1,7 +1,5 @@
 package com.aygunmuellim.app;
 
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
 import android.os.Bundle;
 import android.view.View;
 import android.webkit.WebChromeClient;
@@ -57,22 +55,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void fadeOutSplash() {
-        AlphaAnimation anim = new AlphaAnimation(1.0f, 0.0f);
-        anim.setDuration(500);
-        anim.setFillAfter(true);
-        anim.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {}
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                splash.setVisibility(View.GONE);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {}
-        });
-        splash.startAnimation(anim);
+        splash.animate()
+            .alpha(0f)
+            .setDuration(500)
+            .withEndAction(() -> splash.setVisibility(View.GONE));
     }
 
     @Override
