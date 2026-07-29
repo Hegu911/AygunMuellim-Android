@@ -28,6 +28,9 @@ public class MainActivity extends AppCompatActivity {
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
 
+        String defaultUA = settings.getUserAgentString();
+        settings.setUserAgentString(defaultUA + " AygunMuellim/1.0");
+
         webView.setWebViewClient(new WebViewClient());
         webView.loadUrl("https://lms-2hd.pages.dev");
     }
