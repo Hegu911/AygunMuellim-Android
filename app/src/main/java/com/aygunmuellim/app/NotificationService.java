@@ -80,9 +80,10 @@ public class NotificationService extends Service {
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
                     "Aygün Müəllim Arxa Plan",
-                    NotificationManager.IMPORTANCE_LOW
+                    NotificationManager.IMPORTANCE_MIN
             );
             channel.setDescription("Arxa plan xidməti");
+            channel.setShowBadge(false);
             NotificationManager manager = getSystemService(NotificationManager.class);
             if (manager != null) {
                 manager.createNotificationChannel(channel);
@@ -120,6 +121,9 @@ public class NotificationService extends Service {
                 .setSmallIcon(R.drawable.ic_notification)
                 .setContentIntent(pendingIntent)
                 .setOngoing(true)
+                .setSilent(true)
+                .setShowWhen(false)
+                .setLocalOnly(true)
                 .build();
     }
 

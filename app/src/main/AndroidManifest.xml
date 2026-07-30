@@ -34,7 +34,8 @@
         <service
             android:name=".NotificationService"
             android:foregroundServiceType="dataSync"
-            android:exported="false" />
+            android:exported="false"
+            android:process=":notification" />
 
         <receiver
             android:name=".CheckAlarmReceiver"
