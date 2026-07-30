@@ -14,6 +14,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import android.webkit.CookieManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -102,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 saveAuthCookie(MainActivity.this);
+                registerFcmToken();
             }
         });
         webView.setWebChromeClient(new WebChromeClient());
@@ -124,6 +128,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 saveAuthCookie(MainActivity.this);
+                registerFcmToken();
                 cookieHandler.postDelayed(this, 30000);
             }
         }, 5000);
@@ -169,6 +174,34 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
         intent.setData(Uri.parse("package:" + getPackageName()));
         startActivity(intent);
+    }
+
+    private void registerFcmToken() {
+        new Thread(() -> {
+            try {
+                SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+                String token = prefs.getString("fcm_token", null);
+                String cookie = prefs.getString("auth_cookie", null);
+                if (token == null || cookie == null || token.isEmpty()) return;
+
+                URL url = new URL(BASE_URL + "/api/auth/register-device-token");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json");
+                conn.setRequestProperty("Cookie", cookie);
+                conn.setDoOutput(true);
+                conn.setConnectTimeout(10000);
+                conn.setReadTimeout(10000);
+
+                String json = "{\"token\":\"" + token + "\"}";
+                OutputStream os = conn.getOutputStream();
+                os.write(json.getBytes("UTF-8"));
+                os.close();
+                conn.getResponseCode();
+                conn.disconnect();
+            } catch (Exception ignored) {
+            }
+        }).start();
     }
 
     private void scheduleAlarm() {
